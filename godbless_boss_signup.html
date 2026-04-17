@@ -815,21 +815,17 @@ function submitSignup(){
     wd.members.push({name,job,level:parseInt(level),bosses:{latus:bossLatus,ifrit:bossIfrit},slots:wkSlots,note});
     wd.teams=[];
   });
-  // --- 插入開始：同步到 Supabase ---
+    // --- 雲端同步開始 (移除重複定義的 sm 和 wm) ---
     try {
-        // 準備要送出的資料格式，對應你 Supabase 的欄位
         const signupData = {
             name: name,
             job: job,
             level: parseInt(level),
-            // 因為 bosses 在資料庫是 text[]，我們把勾選的轉成陣列
             bosses: [bossLatus ? '普通拉圖斯' : null, bossIfrit ? '殘暴炎魔' : null].filter(Boolean),
-            // 將時段物件轉為 JSON 存入 slot 欄位
-            slot: Array.from(weekMap.values()).flat(), 
+            slot: Array.from(weekMap.values()).flat(),
             note: note
         };
 
-        // 執行插入動作
         _supabase.from('godbless-bosspartyquest').insert([signupData]).then(({ error }) => {
             if (error) console.error('同步失敗:', error.message);
             else console.log('雲端同步成功！');
@@ -837,12 +833,14 @@ function submitSignup(){
     } catch (e) {
         console.error('傳送過程發生錯誤:', e);
     }
-    // --- 插入結束 ---
+    // --- 雲端同步結束 ---
 
-    const sm = document.getElementById('signup-success'); // 這是原本的 818 行
-  const sm=document.getElementById('signup-success');
-  const wm=document.getElementById('signup-warn');
-  const weekLabels=[...weekMap.keys()].sort().map(wk=>fmtWeekLabel(wk,false)).join('、');
+    // 這裡檢查一下，確保 sm 和 wm 只在這裡定義一次
+    const sm = document.getElementById('signup-success'); 
+    const wm = document.getElementById('signup-warn');
+    const weekLabels = [...weekMap.keys()].sort().map(wk => fmtWeekLabel(wk, false)).join('、');
+    
+    // ... 後面接原本的 sm.textContent 等邏輯
   sm.textContent=`✓ ${name} 報名成功！已加入 ${[bossLatus?'普通拉圖斯':'',bossIfrit?'殘暴炎魔':''].filter(Boolean).join(' + ')} 名單（${weekLabels}）。`;
   sm.style.display='block';
   if(isDup||isBoth){wm.textContent='若本週要打超過 7 場，請記得準備突襲券喔！';wm.style.display='block';}
