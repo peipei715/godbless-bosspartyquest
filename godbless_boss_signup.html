@@ -815,6 +815,31 @@ function submitSignup(){
     wd.members.push({name,job,level:parseInt(level),bosses:{latus:bossLatus,ifrit:bossIfrit},slots:wkSlots,note});
     wd.teams=[];
   });
+  // --- 插入開始：同步到 Supabase ---
+    try {
+        // 準備要送出的資料格式，對應你 Supabase 的欄位
+        const signupData = {
+            name: name,
+            job: job,
+            level: parseInt(level),
+            // 因為 bosses 在資料庫是 text[]，我們把勾選的轉成陣列
+            bosses: [bossLatus ? '普通拉圖斯' : null, bossIfrit ? '殘暴炎魔' : null].filter(Boolean),
+            // 將時段物件轉為 JSON 存入 slot 欄位
+            slot: Array.from(weekMap.values()).flat(), 
+            note: note
+        };
+
+        // 執行插入動作
+        _supabase.from('godbless-bosspartyquest').insert([signupData]).then(({ error }) => {
+            if (error) console.error('同步失敗:', error.message);
+            else console.log('雲端同步成功！');
+        });
+    } catch (e) {
+        console.error('傳送過程發生錯誤:', e);
+    }
+    // --- 插入結束 ---
+
+    const sm = document.getElementById('signup-success'); // 這是原本的 818 行
   const sm=document.getElementById('signup-success');
   const wm=document.getElementById('signup-warn');
   const weekLabels=[...weekMap.keys()].sort().map(wk=>fmtWeekLabel(wk,false)).join('、');
@@ -1069,6 +1094,26 @@ function generateCopyText(){
   });
   document.getElementById('copy-text').textContent=lines.join('\n');
 }
+async function loadAndSyncFromCloud() {
+    const { data, error } = await _supabase
+        .from('godbless-bosspartyquest')
+        .select('*');
+
+    if (error) {
+        console.error('讀取雲端資料失敗:', error);
+        return;
+    }
+
+    if (data && data.length > 0) {
+        // 清空當前畫面（選做，確保不重複）
+        // 這裡需要根據你原本的資料結構，將 data 跑一次你原本的報名邏輯
+        // 建議先測試「儲存」是否成功，讀取的部分如果變數對不上，我可以再幫你調校
+        console.log('已從雲端抓取 ' + data.length + ' 筆報名紀錄');
+    }
+}
+
+// 執行讀取
+loadAndSyncFromCloud();
 function copyAnnouncement(){
   generateCopyText();
   navigator.clipboard.writeText(document.getElementById('copy-text').textContent).then(()=>{
