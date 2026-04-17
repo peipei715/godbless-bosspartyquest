@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>GodBless 公會 Boss 報名系統</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Share+Tech+Mono&display=swap');
 
@@ -1075,6 +1076,10 @@ function copyAnnouncement(){
   }).catch(()=>alert('請手動選取文字複製'));
 }
 
+/* --- 在這裡插入連線資訊 --- */
+const SUPABASE_URL = 'https://yuydkoinygbdybeskiuw.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl1eWRrb2lueWdiZHliZXNraXV3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY0MDk4MDIsImV4cCI6MjA5MTk4NTgwMn0.2xBv8MGV2f7Yo_-KRpZrUNTnrQLtOUMmrF3cSVM-E64';
+const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 addTimeSlot();
 updateMembersWeekBadge();
 updateTeamsWeekBadge();
